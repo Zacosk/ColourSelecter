@@ -1,23 +1,25 @@
-PImage selectedImage, displayedImage, lock, icon;
+PImage selectedImage, lock, icon;
 Button loadButton, resetButton;
 boolean locked, moving;
 float scale;
-PVector pixelPos, imagePos, mousePos;
+PVector selectedPixelPos, imagePos, mousePos;
 int wwidth, hheight;
-String filePath;
 
 void setup()
 {
   size(600, 600);
+  
   surface.setTitle("Image Colour Detector");
   surface.setResizable(true);
-  lock = loadImage("Lock.png");
-  lock.resize(50, 50);
+  
   icon = loadImage("Icon.png");
   surface.setIcon(icon);
+  
+  lock = loadImage("Lock.png");
+  lock.resize(50, 50);
   selectedImage = loadImage("NoImageLoaded.png");
-  displayedImage = selectedImage;
-  loadButton = new Button("Select Image", new PVector(width-25, height-25), "SelectFolder");
+  
+  loadButton = new Button("Select Image", new PVector(15, 15), "SelectFolder");
   ResizeForImage();
   imagePos = new PVector(width/2, height/2);
   scale = 1;
@@ -35,7 +37,7 @@ void draw()
   
   if (!locked)
   {
-    pixelPos = new PVector(mouseX, mouseY);
+    selectedPixelPos = new PVector(mouseX, mouseY);
   }
   
   //display selected image
@@ -45,26 +47,11 @@ void draw()
     imageMode(CENTER);
     translate(imagePos.x, imagePos.y);
     scale(scale);
-    image(displayedImage, 0, 0);
+    image(selectedImage, 0, 0);
     pop();
   }
   
-  
-  //display hex and colour values
-  int r = int(red(get((int)pixelPos.x, (int)pixelPos.y)));
-  int g = int(green(get((int)pixelPos.x, (int)pixelPos.y)));
-  int b = int(blue(get((int)pixelPos.x, (int)pixelPos.y)));
-  fill(255);
-  rect(0, height-50, width, 50);
-  fill (color(r, g, b));
-  noStroke();
-  rect(10, height-37, 25, 25);
-  fill(0);
-  
-  textSize(20);
-  textAlign(LEFT);
-  text("RGB: " + r + ", " + g + ", " + b, 40, height - 25);
-  text("HEX: " + hex(color(r, g, b)), 40, height-5);
+  ColourStats();
   
   if (moving)
   {
@@ -78,11 +65,31 @@ void draw()
   loadButton.Run();
 }
 
+void ColourStats()
+{
+  //display hex and colour values
+  int r = int(red(get((int)selectedPixelPos.x, (int)selectedPixelPos.y)));
+  int g = int(green(get((int)selectedPixelPos.x, (int)selectedPixelPos.y)));
+  int b = int(blue(get((int)selectedPixelPos.x, (int)selectedPixelPos.y)));
+  stroke(1);
+  fill(255);
+  rect(-1, -1, width+1, 31);
+  fill (color(r, g, b));
+  noStroke();
+  rect(10, height-37, 25, 25);
+  fill(0);
+  
+  textSize(20);
+  textAlign(LEFT);
+  text("RGB: " + r + ", " + g + ", " + b, 40, 20);
+  text("HEX: " + hex(color(r, g, b)), 220, 20);
+}
+
 void DetectWindowSizeChange()
 {
   if (hheight != height || wwidth != width)
   {
-    loadButton.ResetPosition(new PVector(width-25, height - 25));
+    loadButton.ResetPosition(new PVector(15, 15));
   }
 }
 
@@ -97,7 +104,7 @@ void ResizeForImage()
     surface.setSize(600, 600);
   }
   
-  loadButton.ResetPosition(new PVector(width-25, height - 25));
+  loadButton.ResetPosition(new PVector(15, 15));
 }
 
 void LoadImage(File selection)
@@ -105,7 +112,6 @@ void LoadImage(File selection)
   if (selection != null)
   {
     selectedImage = loadImage(selection.getAbsolutePath());
-    displayedImage = selectedImage;
     ResizeForImage();
   }
 }

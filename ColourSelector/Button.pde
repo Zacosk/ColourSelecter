@@ -12,7 +12,7 @@ public class Button
     this.popupText = text;
     
     this.image = loadImage(imageName + ".png");
-    this.image.resize(50, 50);
+    this.image.resize(30, 30);
   }
   
   public void Run()
@@ -35,6 +35,8 @@ public class Button
     pop();
   }
   
+  //Popup with the name of the button if the user 
+  //mouses over it for a set amount of time
   public void PopupTimer()
   {
     if (!hover)
@@ -44,12 +46,16 @@ public class Button
     } else {
       timer += 1;
     }
-    if (timer >= 120)
+    if (timer >= 80)
     {
-      textAlign(RIGHT);
+      //Background
+      fill(255);
+      rect(mouseX + 15, mouseY-5, 110, 20);
+      //Popup Text
       fill(0);
+      textAlign(LEFT);
       textSize(20);
-      text(popupText,position.x - 30, position.y);
+      text(popupText,mouseX + 17, mouseY+10);
     }
   }
   
