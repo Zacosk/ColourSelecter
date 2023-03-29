@@ -19,12 +19,13 @@ void setup()
   surface.setIcon(icon);
   
   lock = loadImage("Lock.png");
-  lock.resize(50, 50);
+  lock.resize(30, 30);
   selectedImage = loadImage("NoImageLoaded.png");
+  smooth();
   
   loadButton = new Button("Select Image", new PVector(15, 15), "SelectFolder", new PVector(30, 30));
   RGBButton = new Button("Copy RGB", new PVector(115, 15), "BlankButton", new PVector(160, 30));
-  HEXButton = new Button("Copy HEX", new PVector(282, 15), "BlankButton", new PVector(130, 30));
+  HEXButton = new Button("Copy HEX", new PVector(257, 15), "BlankButton", new PVector(120, 30));
   ResizeForImage();
   imagePos = new PVector(width/2, height/2);
   scale = 1;
@@ -37,7 +38,6 @@ void setup()
 
 void draw()
 { 
-  DetectWindowSizeChange();
   background(255);
   
   if (!locked)
@@ -65,7 +65,7 @@ void draw()
   }
   if (locked)
   {
-    image(lock, 0, 0);
+    image(lock, width-30, 0);
   }
   loadButton.Run();
 }
@@ -81,7 +81,7 @@ void ColourStats()
   rect(-1, -1, width+1, 31);
   fill (color(r, g, b));
   noStroke();
-  rect(10, height-37, 25, 25);
+  rect(320, 3, 25, 25);
   fill(0);
   
   textSize(20);
@@ -89,15 +89,7 @@ void ColourStats()
   RGBButton.Run();
   HEXButton.Run();
   text("RGB: " + r + ", " + g + ", " + b, 40, 22);
-  text("HEX: #" + hex(color(r, g, b), 6), 220, 22);
-}
-
-void DetectWindowSizeChange()
-{
-  if (hheight != height || wwidth != width)
-  {
-    loadButton.ResetPosition(new PVector(15, 15));
-  }
+  text("HEX: #" + hex(color(r, g, b), 6), 200, 22);
 }
 
 void ResizeForImage()
@@ -175,6 +167,19 @@ void keyPressed() {
   if (key == 'r')
   {
     scale = 1;
-    imagePos = new PVector(25, 25);
+    imagePos = new PVector(width/2, height/2);
+  } else if (key == CODED) {
+    if (keyCode == UP) {
+      imagePos.y -= 5;
+    }
+    if (keyCode == DOWN) {
+      imagePos.y += 5;
+    }
+    if (keyCode == LEFT) {
+      imagePos.x -= 5;
+    }
+    if (keyCode == RIGHT) {
+      imagePos.x += 5;
+    }
   }
 }
