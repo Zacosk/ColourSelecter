@@ -6,13 +6,13 @@ public class Button
   public boolean hover;
   float timer;
   
-  public Button(String text, PVector position, String imageName)
+  public Button(String text, PVector position, String imageName, PVector size)
   {
     this.position = position;
     this.popupText = text;
     
     this.image = loadImage(imageName + ".png");
-    this.image.resize(30, 30);
+    this.image.resize((int)size.x, (int)size.y);
   }
   
   public void Run()
@@ -67,9 +67,9 @@ public class Button
   public void CheckHover()
   {
     hover = false;
-    if (mouseX <= (position.x) + 25 && mouseX >= (position.x) - 25)
+    if (mouseX <= (position.x) + (image.width/2) && mouseX >= (position.x) - (image.width/2))
     {
-      if (mouseY <= (position.y) + 25 && mouseY >= (position.y) - 25)
+      if (mouseY <= (position.y) + (image.height/2) && mouseY >= (position.y) - (image.height/2))
       {
         hover = true;
       }

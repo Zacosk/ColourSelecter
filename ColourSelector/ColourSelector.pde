@@ -1,9 +1,12 @@
+import java.awt.*;
+import java.awt.datatransfer.*;
+
 PImage selectedImage, lock, icon;
-Button loadButton, resetButton;
+Button loadButton, RGBButton, HEXButton;
 boolean locked, moving;
 float scale;
 PVector selectedPixelPos, imagePos, mousePos;
-int wwidth, hheight;
+int wwidth, hheight, r, g, b;
 
 void setup()
 {
@@ -19,7 +22,9 @@ void setup()
   lock.resize(50, 50);
   selectedImage = loadImage("NoImageLoaded.png");
   
-  loadButton = new Button("Select Image", new PVector(15, 15), "SelectFolder");
+  loadButton = new Button("Select Image", new PVector(15, 15), "SelectFolder", new PVector(30, 30));
+  RGBButton = new Button("Copy RGB", new PVector(115, 15), "BlankButton", new PVector(160, 30));
+  HEXButton = new Button("Copy HEX", new PVector(282, 15), "BlankButton", new PVector(130, 30));
   ResizeForImage();
   imagePos = new PVector(width/2, height/2);
   scale = 1;
@@ -68,9 +73,9 @@ void draw()
 void ColourStats()
 {
   //display hex and colour values
-  int r = int(red(get((int)selectedPixelPos.x, (int)selectedPixelPos.y)));
-  int g = int(green(get((int)selectedPixelPos.x, (int)selectedPixelPos.y)));
-  int b = int(blue(get((int)selectedPixelPos.x, (int)selectedPixelPos.y)));
+  r = int(red(get((int)selectedPixelPos.x, (int)selectedPixelPos.y)));
+  g = int(green(get((int)selectedPixelPos.x, (int)selectedPixelPos.y)));
+  b = int(blue(get((int)selectedPixelPos.x, (int)selectedPixelPos.y)));
   stroke(1);
   fill(255);
   rect(-1, -1, width+1, 31);
@@ -81,8 +86,10 @@ void ColourStats()
   
   textSize(20);
   textAlign(LEFT);
-  text("RGB: " + r + ", " + g + ", " + b, 40, 20);
-  text("HEX: " + hex(color(r, g, b)), 220, 20);
+  RGBButton.Run();
+  HEXButton.Run();
+  text("RGB: " + r + ", " + g + ", " + b, 40, 22);
+  text("HEX: #" + hex(color(r, g, b), 6), 220, 22);
 }
 
 void DetectWindowSizeChange()
@@ -116,12 +123,22 @@ void LoadImage(File selection)
   }
 }
 
+void copyToClipboard(String stringToCopy){
+  StringSelection selection = new StringSelection(stringToCopy);
+  Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+  clipboard.setContents(selection, selection);
+}
+
 void mousePressed()
-{ 
+{
   if (mouseButton == LEFT) {
     if (loadButton.hover)
     {
       selectInput("Select a file to process:", "LoadImage");
+    } else if (RGBButton.hover) {
+      copyToClipboard(r + ", " + g + ", " + b);
+    } else if (HEXButton.hover) {
+      copyToClipboard("#" + hex(color(r, g, b), 6));
     } else {
       if (!locked)
       {
