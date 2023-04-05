@@ -59,14 +59,6 @@ void draw()
     pop();
   }
   
-  if (displayHelp) {
-    fill(0, 0, 0, 125);
-    rect(0, 0, width, height);
-    fill(255);
-    textAlign(CENTER);
-    text("This program is designed to assist with \nselecting colours from images.", width/2, 100);
-  }
-  
   ColourStats();
   
   if (moving)
@@ -81,6 +73,34 @@ void draw()
   loadButton.Run();
   pasteButton.Run();
   helpButton.Run();
+  
+  if (displayHelp) {
+    HelpDisplay();
+  }
+}
+
+void HelpDisplay() {
+    fill(0, 0, 0, 140);
+    rect(0, 0, width, height);
+    fill(255);
+    rect(2, 105, 116, 60);
+    rect(25, 50, 106, 30);
+    rect(142, 50, 88, 30);
+    rect(250, 50, 88, 30);
+    rect(30, 330, 340, 60);
+    textAlign(CENTER);
+    fill(0);
+    stroke(255);
+    strokeWeight(2);
+    line(20, 20, 20, 100);
+    text("Select image \nfrom file", 60, 125);
+    line(54, 20, 54, 55);
+    text("Paste image", 78, 70);
+    line(186, 20, 186, 55);
+    text("Copy RGB", 186, 70);
+    line(294, 20, 294, 55);
+    text("Copy HEX", 294, 70);
+    text("This program is designed to assist with \nselecting colours from images.", width/2, 350);
 }
 
 void ColourStats()
