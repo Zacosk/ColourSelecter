@@ -7,6 +7,7 @@ boolean locked, moving, displayHelp;
 float scale;
 PVector selectedPixelPos, imagePos, mousePos;
 int wwidth, hheight, r, g, b;
+color selectedColour;
 
 void setup()
 {
@@ -87,11 +88,13 @@ void ColourStats()
   //display hex and colour values
   r = int(red(get((int)selectedPixelPos.x, (int)selectedPixelPos.y)));
   g = int(green(get((int)selectedPixelPos.x, (int)selectedPixelPos.y)));
-  b = int(blue(get((int)selectedPixelPos.x, (int)selectedPixelPos.y)));
+  b = int(blue(get((int)selectedPixelPos.x, (int)selectedPixelPos.y)));\
+  selectedColour = color(r, g, b);
+  
   stroke(1);
   fill(255);
   rect(-1, -1, width+1, 31);
-  fill (color(r, g, b));
+  fill (selectedColour);
   stroke(color(255-r, 255-g, 255-b));
   circle(selectedPixelPos.x + 25, selectedPixelPos.y + 25, 25);
   fill(0);
@@ -101,7 +104,7 @@ void ColourStats()
   rgbButton.Run();
   hexButton.Run();
   text("RGB: " + r + ", " + g + ", " + b, 69, 22);
-  text("HEX: #" + hex(color(r, g, b), 6), 237, 22);
+  text("HEX: #" + hex(selectedColour, 6), 237, 22);
 }
 
 void ResizeForImage()
