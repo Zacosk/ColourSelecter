@@ -7,7 +7,7 @@ boolean locked, moving, displayHelp;
 float scale;
 PVector selectedPixelPos, imagePos, mousePos;
 int wwidth, hheight, r, g, b;
-color selectedColour;
+color selectedColour, previousSelectedColour;
 
 void setup()
 {
@@ -68,6 +68,7 @@ void draw()
   }
   if (locked)
   {
+    previousSelectedColour = selectedColour;
     image(lock, width-30, height-30);
   }
   loadButton.Run();
@@ -108,7 +109,7 @@ void ColourStats()
   //display hex and colour values
   r = int(red(get((int)selectedPixelPos.x, (int)selectedPixelPos.y)));
   g = int(green(get((int)selectedPixelPos.x, (int)selectedPixelPos.y)));
-  b = int(blue(get((int)selectedPixelPos.x, (int)selectedPixelPos.y)));\
+  b = int(blue(get((int)selectedPixelPos.x, (int)selectedPixelPos.y)));
   selectedColour = color(r, g, b);
   
   stroke(1);
@@ -116,7 +117,10 @@ void ColourStats()
   rect(-1, -1, width+1, 31);
   fill (selectedColour);
   stroke(color(255-r, 255-g, 255-b));
-  circle(selectedPixelPos.x + 25, selectedPixelPos.y + 25, 25);
+  arc(selectedPixelPos.x + 25, selectedPixelPos.y + 25, 25, 25, 3.14159, 6.28319);
+  fill(previousSelectedColour);
+  arc(selectedPixelPos.x + 25, selectedPixelPos.y + 25, 25, 25, 0, 3.14159);
+  
   fill(0);
   
   textSize(20);
