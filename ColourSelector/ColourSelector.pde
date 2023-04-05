@@ -91,7 +91,7 @@ void HelpDisplay() {
     rect(142, 50, 88, 30);
     rect(235, 50, 88, 30);
     rect(340, 50, 60, 60);
-    rect(30, 330, 340, 60);
+    rect(40, 330, 340, 60);
     textAlign(CENTER);
     fill(0);
     stroke(255);
