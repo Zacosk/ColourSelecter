@@ -2,8 +2,8 @@ import java.awt.*;
 import java.awt.datatransfer.*;
 
 PImage selectedImage, lock, icon;
-Button loadButton, rgbButton, hexButton, pasteButton, helpButton;
-boolean locked, moving, displayHelp;
+Button loadButton, rgbButton, hexButton, pasteButton, resetButton, helpButton;
+boolean locked, moving, displayHelp, controlPressed;
 float scale;
 PVector selectedPixelPos, imagePos, mousePos;
 int wwidth, hheight, r, g, b;
@@ -31,6 +31,7 @@ void setup()
   pasteButton = new Button("Paste Image", new PVector(48, 15), "PasteButton", new PVector(30, 30)); 
   rgbButton = new Button("Copy RGB", new PVector(146, 15), "BlankButton", new PVector(160, 30));
   hexButton = new Button("Copy HEX", new PVector(294, 15), "BlankButton", new PVector(124, 30));
+  resetButton = new Button("Reset Image", new PVector(370, 15), "ResetButton", new PVector(30, 30));
   helpButton = new Button("Help", new PVector(width-16, 15), "InfoButton", new PVector(30, 30));
   
   scale = 1;
@@ -42,6 +43,7 @@ void setup()
 void draw()
 { 
   background(255);
+  println(controlPressed);
   
   if (!locked)
   {
@@ -74,6 +76,7 @@ void draw()
   loadButton.Run();
   pasteButton.Run();
   helpButton.Run();
+  resetButton.Run();
   
   if (displayHelp) {
     HelpDisplay();
@@ -87,7 +90,8 @@ void HelpDisplay() {
     rect(2, 105, 116, 60);
     rect(25, 50, 106, 30);
     rect(142, 50, 88, 30);
-    rect(250, 50, 88, 30);
+    rect(235, 50, 88, 30);
+    rect(340, 50, 60, 60);
     rect(30, 330, 340, 60);
     textAlign(CENTER);
     fill(0);
@@ -100,7 +104,9 @@ void HelpDisplay() {
     line(186, 20, 186, 55);
     text("Copy RGB", 186, 70);
     line(294, 20, 294, 55);
-    text("Copy HEX", 294, 70);
+    text("Copy HEX", 279, 70);
+    line(370, 20, 370, 55);
+    text("Reset \nImage", 370, 70);
     text("This program is designed to assist with \nselecting colours from images.", width/2, 350);
 }
 
@@ -135,9 +141,9 @@ void ResizeForImage()
 { 
   //if the image is too big for the surface, resize surface to be slightly bigger
   surface.setSize(selectedImage.width + 50, selectedImage.height+100);
-  if (width < 400 || (width >= 400 && height < 100))
+  if (width < 420 || (width >= 420 && height < 100))
   {
-    surface.setSize(400, 400);
+    surface.setSize(420, 420);
   } else if (width > 600 || height > 600) {
     surface.setSize(600, 600);
   }
@@ -183,18 +189,29 @@ void ToggleDisplayHelp() {
   }
 }
 
+void LoadImage() {
+  selectInput("Select a file to process:", "LoadImage");
+}
+
+void ResetImage() {
+  scale = 1;
+  imagePos = new PVector(width/2, height/2);
+}
+
 void mousePressed()
 {
   if (mouseButton == LEFT) {
     if (loadButton.hover)
     {
-      selectInput("Select a file to process:", "LoadImage");
+      LoadImage();
     } else if (rgbButton.hover) {
       copyToClipboard(r + ", " + g + ", " + b);
     } else if (hexButton.hover) {
       copyToClipboard("#" + hex(color(r, g, b), 6));
     } else if (pasteButton.hover) {
       selectedImage = getImageFromClipboard();
+    } else if (resetButton.hover) {
+      ResetImage();
     } else if (helpButton.hover) {
       ToggleDisplayHelp();
     } else {
@@ -230,13 +247,10 @@ void mouseWheel(MouseEvent event) {
 }
 
 void keyPressed() {
-  if (key == 'r')
-  {
-    scale = 1;
-    imagePos = new PVector(width/2, height/2);
-  } else if (key =='a') {
-    selectedImage = getImageFromClipboard();
-  } else if (key == CODED) {
+  if (key == CODED) {
+    if (keyCode == CONTROL) {
+      controlPressed = true;
+    }
     if (keyCode == UP) {
       imagePos.y -= 5;
     }
@@ -248,6 +262,23 @@ void keyPressed() {
     }
     if (keyCode == RIGHT) {
       imagePos.x += 5;
+    }
+  }
+  if (controlPressed) {
+    if (key == 'o') {
+      LoadImage();
+    } else if (key == 'v') {
+      selectedImage = getImageFromClipboard();
+    } else if (key == 'r') {
+      ResetImage();
+    }
+  }
+}
+
+void keyReleased() {
+  if (key == CODED) {
+    if (keyCode == CONTROL) {
+      controlPressed = false;
     }
   }
 }
