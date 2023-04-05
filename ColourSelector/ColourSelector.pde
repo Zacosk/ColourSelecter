@@ -3,7 +3,7 @@ import java.awt.datatransfer.*;
 
 PImage selectedImage, lock, icon;
 Button loadButton, rgbButton, hexButton, pasteButton, resetButton, helpButton;
-boolean locked, moving, displayHelp, controlPressed;
+boolean locked, moving, displayHelp;
 float scale;
 PVector selectedPixelPos, imagePos, mousePos;
 int wwidth, hheight, r, g, b;
@@ -43,7 +43,6 @@ void setup()
 void draw()
 { 
   background(255);
-  println(controlPressed);
   
   if (!locked)
   {
@@ -248,9 +247,6 @@ void mouseWheel(MouseEvent event) {
 
 void keyPressed() {
   if (key == CODED) {
-    if (keyCode == CONTROL) {
-      controlPressed = true;
-    }
     if (keyCode == UP) {
       imagePos.y -= 5;
     }
@@ -264,21 +260,16 @@ void keyPressed() {
       imagePos.x += 5;
     }
   }
-  if (controlPressed) {
-    if (key == 'o') {
-      LoadImage();
-    } else if (key == 'v') {
-      selectedImage = getImageFromClipboard();
-    } else if (key == 'r') {
-      ResetImage();
-    }
-  }
 }
 
 void keyReleased() {
-  if (key == CODED) {
-    if (keyCode == CONTROL) {
-      controlPressed = false;
-    }
+  if (key == 'r') {
+    ResetImage();
+  }
+  if (key == 'o') {
+    LoadImage();
+  }
+  if (key == 'v') {
+    selectedImage = getImageFromClipboard();
   }
 }
