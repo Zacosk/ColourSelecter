@@ -13,7 +13,7 @@ void setup()
 {
   size(600, 600);
   smooth(8);
-  //pixelDensity(displayDensity());
+  pixelDensity(displayDensity());
   
   surface.setTitle("Image Colour Detector");
   surface.setResizable(true);
@@ -43,10 +43,11 @@ void setup()
 void draw()
 { 
   background(255);
+  println(frameRate);
   
   if (!locked)
   {
-    selectedPixelPos = new PVector(mouseX, mouseY);//map(mouseX, 0, width*displayDensity(), 0, width), map(mouseY, 0, height*displayDensity(), 0, height));
+    selectedPixelPos = new PVector(mouseX * displayDensity(), mouseY * displayDensity());
   }
   
   //display selected image
@@ -122,9 +123,9 @@ void ColourStats()
   rect(-1, -1, width+1, 31);
   fill (selectedColour);
   stroke(color(255-r, 255-g, 255-b));
-  arc(selectedPixelPos.x + 25, selectedPixelPos.y + 25, 25, 25, 3.14159, 6.28319);
+  arc(mouseX + 25, mouseY + 25, 25, 25, 3.14159, 6.28319);
   fill(previousSelectedColour);
-  arc(selectedPixelPos.x + 25, selectedPixelPos.y + 25, 25, 25, 0, 3.14159);
+  arc(mouseX + 25, mouseY + 25, 25, 25, 0, 3.14159);
   
   fill(0);
   
