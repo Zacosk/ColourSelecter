@@ -119,7 +119,7 @@ void ColourStats()
   selectedColour = color(r, g, b);
   
   stroke(1);
-  fill(255);
+  fill(83);
   rect(-1, -1, width+1, 31);
   fill (selectedColour);
   stroke(color(255-r, 255-g, 255-b));
@@ -127,7 +127,7 @@ void ColourStats()
   fill(previousSelectedColour);
   arc(mouseX + 25, mouseY + 25, 25, 25, 0, 3.14159);
   
-  fill(0);
+  fill(255);
   
   textSize(20);
   textAlign(LEFT);
