@@ -151,7 +151,7 @@ void copyToClipboard(String stringToCopy){
 }
 
 void keyPressed() {
-  if (key == ' ') {
+  if (key == 'x') {
     captureActive = !captureActive;
   }
   if (key == 'z') {
