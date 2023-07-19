@@ -17,10 +17,11 @@ Point mouse;
 //Button variables
 Button rgbButton, hexButton;
 
-Boolean captureActive, mouseSelect, zoom;
+Boolean captureActive, mouseSelect, panning;
 color selectedColour;
-int r, g, b, scale;
-PVector detectionPoint;
+int r, g, b;
+PVector centrePoint, detectionPoint, imagePos, mousePos;
+float scale;
 
 void setup(){
   //initialise window settings
@@ -33,10 +34,12 @@ void setup(){
   surface.setIcon(icon);
   
   captureActive = true;
-  zoom = false;
   mouseSelect = false;
+  panning = false;
   scale = 1;
-  detectionPoint = new PVector(width/2, 80);
+  centrePoint = new PVector(width/2, 80);
+  detectionPoint = centrePoint;
+  imagePos = centrePoint;
   
   //New screen shot variables
   try
@@ -52,13 +55,20 @@ void setup(){
   hexButton = new Button("Copy HEX", new PVector(168, 0), "BlankButtonDark", new PVector(134, 30));
 }
 void draw(){
+  background(0);
   if (captureActive) {
     captureScreenShot();
   }
   
+  if (panning)
+  {
+    imagePos = new PVector(imagePos.x + (mousePos.x - mouseX) * -1, imagePos.y + (mousePos.y - mouseY) * -1);
+    mousePos = new PVector(mouseX, mouseY);  
+  }
+  
   //Screen image
   push();
-  translate(width/2, 80);
+  translate(imagePos.x, imagePos.y);
   scale(scale);
   imageMode(CENTER);
   image(screenshot,0, 0);
@@ -76,7 +86,7 @@ void captureScreenShot()
 {
   mouse = MouseInfo.getPointerInfo().getLocation();
   
-  screenshotSize = new Rectangle(mouse.x-150, mouse.y-50, 300, 100);
+  screenshotSize = new Rectangle(mouse.x-150, mouse.y-150, 300, 300);
   capturedImage = robot.createScreenCapture(screenshotSize);//new Rectangle(Toolkit.getDefaultToolkit().getScreenSize()));
   screenshot = new PImage(capturedImage);
 }
@@ -93,7 +103,8 @@ void DetectionMode()
 {
   if (captureActive)
   {
-    detectionPoint = new PVector(width/2, 80);
+    detectionPoint = centrePoint;
+    imagePos = centrePoint;
   } else if (mouseSelect){
     detectionPoint = new PVector(mouseX, mouseY);
   }
@@ -119,7 +130,7 @@ void DrawTopBar() {
 void DrawColourPreview()
 {
   //Draw colour preview
-  stroke(0);
+  stroke(color(255-r, 255-g, 255-b));
   strokeWeight(2);
   fill(selectedColour);
   rect(width-32, height-32, 30, 30);
@@ -142,6 +153,21 @@ void mousePressed()
       mouseSelect = !mouseSelect;
     }
   }
+  if (mouseButton == RIGHT)
+  {
+    if (!panning) {
+      mousePos = new PVector(mouseX, mouseY);
+      panning = true;
+    }
+  }
+}
+
+void mouseReleased()
+{
+  if (mouseButton == RIGHT)
+  {
+    panning = false;
+  }
 }
 
 void copyToClipboard(String stringToCopy){
@@ -154,11 +180,12 @@ void keyPressed() {
   if (key == 'x') {
     captureActive = !captureActive;
   }
-  if (key == 'z') {
-    if (scale == 1) {
-      scale = 2;
-    } else {
-      scale = 1;
-    }
+}
+
+void mouseWheel(MouseEvent event) {
+  float e = event.getCount();
+  scale -= e * 0.5;
+  if (scale < 1) {
+    scale = 1;
   }
 }
