@@ -2,7 +2,7 @@ public class Button
 {
   String popupText;
   PImage image;
-  PVector position;
+  PVector position, size;
   public boolean hover;
   float timer;
   
@@ -13,6 +13,7 @@ public class Button
     
     this.image = loadImage(imageName + ".png");
     this.image.resize((int)size.x, (int)size.y);
+    this.size = size;
   }
   
   public void Run()
@@ -73,5 +74,16 @@ public class Button
         hover = true;
       }
     }
+  }
+  
+  public void UpdateImg(boolean darkMode)
+  {
+    if (darkMode)
+    {
+      image = loadImage("BlankButtonDark.png");
+    } else {
+      image = loadImage("BlankButtonLight.png");
+    }
+    image.resize((int)size.x, (int)size.y);
   }
 }

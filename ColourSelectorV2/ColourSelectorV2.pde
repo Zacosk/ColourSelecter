@@ -15,18 +15,21 @@ Rectangle screenshotSize;
 Point mouse;
 
 //Button variables
-Button rgbButton, hexButton;
+Button rgbButton, hexButton, settingsButton;
+ToggleButton resizeOnHoverToggle, darkModeToggle;
 
-Boolean captureActive, mouseSelect, panning;
+Boolean captureActive, mouseSelect, panning, surfaceChanging, surfaceExpanded, displaySettings;
 color selectedColour;
 int r, g, b;
 PVector centrePoint, detectionPoint, imagePos, mousePos;
-float scale;
+float scale, currentTime, lastTime, deltaTime;
+
+JSONObject settingsJSON;
 
 void setup(){
   //initialise window settings
   //pixelDensity(displayDensity());
-  size(300, 130);
+  size(330, 130);
   smooth(8);
   surface.setTitle("Pixel Colour Selector");
   surface.setAlwaysOnTop(true);
@@ -34,14 +37,19 @@ void setup(){
   surface.setIcon(icon);
   
   captureActive = true;
-  mouseSelect = false;
   panning = false;
+  surfaceExpanded = false;
+  mouseSelect = false;
+  surfaceChanging = false;
+  displaySettings = false;
+  
   scale = 1;
   centrePoint = new PVector(width/2, 80);
   detectionPoint = centrePoint;
   imagePos = centrePoint;
+  lastTime = millis();
   
-  //New screen shot variables
+  //New screen capture variables
   try
   {
     robot = new Robot();
@@ -53,6 +61,16 @@ void setup(){
   //Initialise buttons
   rgbButton = new Button("Copy RGB", new PVector(0, 0), "BlankButtonDark", new PVector(168, 30));
   hexButton = new Button("Copy HEX", new PVector(168, 0), "BlankButtonDark", new PVector(134, 30));
+  settingsButton = new Button("Settings", new PVector(width-30, 0), "BlankButtonDark", new PVector(30, 30));
+
+  LoadSettings();
+
+  //Initialise toggles
+  resizeOnHoverToggle = new ToggleButton(settingsJSON.getBoolean("expandOnHover"), new PVector(width-40, 45), "Expand on hover  -  ");
+  darkModeToggle = new ToggleButton(settingsJSON.getBoolean("darkMode"), new PVector(width-40, 75), "Dark mode  -  ");
+  
+  ToggleDarkMode();
+  SaveSettings();
 }
 void draw(){
   background(0);
@@ -80,6 +98,17 @@ void draw(){
   DrawColourPreview();
   
   DetectionMode();
+  
+  if (displaySettings) 
+  {
+    DrawSettings(); 
+  }
+  
+  if (resizeOnHoverToggle.toggledOn)
+  {
+    CalculateDeltaTime();
+    RunChangeSurfaceSize();
+  }
 }
 
 void captureScreenShot()
@@ -119,10 +148,16 @@ void DrawTopBar() {
   //Draw buttons
   rgbButton.Run();
   hexButton.Run();
+  settingsButton.Run();
   
   //Draw text
-  fill(255);
+  fill(0);
+  if (darkModeToggle.toggledOn)
+  {
+    fill(255);
+  }
   textSize(20);
+  textAlign(LEFT);
   text("RGB: " + formatNum(r) + ", " + formatNum(g) + ", " + formatNum(b), 8, 22);
   text("HEX: #" + hex(selectedColour, 6), 176, 22);
 }
@@ -136,9 +171,88 @@ void DrawColourPreview()
   rect(width-32, height-32, 30, 30);
 }
 
+void DrawSettings()
+{
+  noStroke();
+  fill(255);
+  if (darkModeToggle.toggledOn)
+  {
+    fill(56);
+  }
+  rect(0, 30, width, height-30);
+  
+  resizeOnHoverToggle.Run();
+  darkModeToggle.Run();
+}
+
 String formatNum(int num) 
 {
   return String.format("%03d", num);
+}
+
+void CalculateDeltaTime()
+{
+  currentTime = millis();
+  
+  deltaTime = (currentTime - lastTime);
+  lastTime = currentTime;
+}
+
+void RunChangeSurfaceSize() 
+{
+  
+  if (mouseSelect && !surfaceExpanded)
+  {
+    surface.setSize(width, height + (int)(1 * deltaTime));
+    if (height >= 300) {
+      surfaceExpanded = true;
+      surface.setSize(width, 300);
+      surfaceChanging = false;
+    }
+  } else if (captureActive && surfaceExpanded)
+  {
+    surface.setSize(width, height - (int)(1 * deltaTime));
+    if (height <= 130) {
+      surfaceExpanded = false;
+      surface.setSize(width, 130);
+      surfaceChanging = false;
+    }
+  }
+}
+
+void LoadSettings()
+{
+  if (checkFileExists("data/settings.json"))
+  {
+    settingsJSON = loadJSONObject("settings.json");
+  } else {
+    println("json not found, creating");
+    settingsJSON = new JSONObject();
+    settingsJSON.setBoolean("darkMode", true);
+    settingsJSON.setBoolean("expandOnHover", false);
+  }
+}
+
+void SaveSettings()
+{
+  settingsJSON.setBoolean("darkMode", darkModeToggle.toggledOn);
+  settingsJSON.setBoolean("expandOnHover", resizeOnHoverToggle.toggledOn);
+  saveJSONObject(settingsJSON, "data/settings.json");
+}
+
+boolean checkFileExists(String fileName) {
+  File file = new File(sketchPath(fileName));
+  return file.exists();
+}
+
+void ToggleDarkMode()
+{
+  rgbButton.UpdateImg(darkModeToggle.toggledOn);
+  hexButton.UpdateImg(darkModeToggle.toggledOn);
+  settingsButton.UpdateImg(darkModeToggle.toggledOn);
+  
+  darkModeToggle.UpdateTextColour(darkModeToggle.toggledOn);
+  resizeOnHoverToggle.UpdateTextColour(darkModeToggle.toggledOn);
 }
 
 void mousePressed()
@@ -149,6 +263,15 @@ void mousePressed()
       copyToClipboard(r + ", " + g + ", " + b);
     } else if (hexButton.hover) {
       copyToClipboard("#" + hex(color(r, g, b), 6));
+    } else if (settingsButton.hover) {
+      displaySettings = !displaySettings;
+    } else if (resizeOnHoverToggle.hover) {
+      resizeOnHoverToggle.toggledOn = !resizeOnHoverToggle.toggledOn;
+      SaveSettings();
+    } else if (darkModeToggle.hover) {
+      darkModeToggle.toggledOn = !darkModeToggle.toggledOn;
+      SaveSettings();
+      ToggleDarkMode();
     } else if (!captureActive){
       mouseSelect = !mouseSelect;
     }
