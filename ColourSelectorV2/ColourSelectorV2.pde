@@ -18,7 +18,7 @@ Point mouse;
 Button rgbButton, hexButton, settingsButton;
 ToggleButton resizeOnHoverToggle, darkModeToggle;
 
-Boolean captureActive, mouseSelect, panning, surfaceChanging, surfaceExpanded, displaySettings;
+Boolean captureActive, mouseSelect, panning, panningUp, panningDown, panningLeft, panningRight, surfaceChanging, surfaceExpanded, displaySettings;
 color selectedColour;
 int r, g, b;
 PVector centrePoint, detectionPoint, imagePos, mousePos;
@@ -42,6 +42,10 @@ void setup(){
   mouseSelect = false;
   surfaceChanging = false;
   displaySettings = false;
+  panningUp = false;
+  panningDown = false;
+  panningRight = false;
+  panningLeft = false;
   
   scale = 1;
   centrePoint = new PVector(width/2, 80);
@@ -96,6 +100,8 @@ void draw(){
   
   DrawTopBar();
   DrawColourPreview();
+  CalculateDeltaTime();
+  CheckPanning();
   
   DetectionMode();
   
@@ -106,7 +112,6 @@ void draw(){
   
   if (resizeOnHoverToggle.toggledOn)
   {
-    CalculateDeltaTime();
     RunChangeSurfaceSize();
   }
 }
@@ -302,6 +307,55 @@ void copyToClipboard(String stringToCopy){
 void keyPressed() {
   if (key == 'x') {
     captureActive = !captureActive;
+  }
+  if (key == CODED && !captureActive)
+  {
+    if (keyCode == UP) {
+      panningUp = true;
+    }
+    if (keyCode == DOWN) {
+      panningDown = true;
+    }
+    if (keyCode == RIGHT) {
+      panningRight = true;
+    }
+    if (keyCode == LEFT) {
+      panningLeft = true;
+    }
+  }
+}
+
+void keyReleased()
+{
+  if (key == CODED && !captureActive)
+  {
+    if (keyCode == UP) {
+      panningUp = false;
+    }
+    if (keyCode == DOWN) {
+      panningDown = false;
+    }
+    if (keyCode == RIGHT) {
+      panningRight = false;
+    }
+    if (keyCode == LEFT) {
+      panningLeft = false;
+    }
+  }
+}
+
+void CheckPanning() {
+  if (panningUp) {
+    imagePos.y += 0.5f * deltaTime;
+  }
+  if (panningDown) {
+    imagePos.y -= 0.5f * deltaTime;
+  }
+  if (panningLeft) {
+    imagePos.x += 0.5f * deltaTime;
+  }
+  if (panningRight) {
+    imagePos.x -= 0.5f * deltaTime;
   }
 }
 
