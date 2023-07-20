@@ -1,6 +1,6 @@
 public class Button
 {
-  String popupText;
+  String imageName;
   PImage image;
   PVector position, size;
   public boolean hover;
@@ -9,9 +9,9 @@ public class Button
   public Button(String text, PVector position, String imageName, PVector size)
   {
     this.position = position;
-    this.popupText = text;
+    this.imageName = imageName;
     
-    this.image = loadImage(imageName + ".png");
+    this.image = loadImage(imageName + "Dark.png");
     this.image.resize((int)size.x, (int)size.y);
     this.size = size;
   }
@@ -55,7 +55,7 @@ public class Button
       fill(0);
       textAlign(LEFT);
       textSize(20);
-      text(popupText,mouseX + 17, mouseY+10);
+      text(imageName,mouseX + 17, mouseY+10);
     }
   }
   
@@ -80,9 +80,9 @@ public class Button
   {
     if (darkMode)
     {
-      image = loadImage("BlankButtonDark.png");
+      image = loadImage(imageName + "Dark.png");
     } else {
-      image = loadImage("BlankButtonLight.png");
+      image = loadImage(imageName + "Light.png");
     }
     image.resize((int)size.x, (int)size.y);
   }

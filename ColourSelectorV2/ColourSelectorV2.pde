@@ -69,9 +69,9 @@ void setup(){
   }
 
   //Initialise buttons
-  rgbButton = new Button("Copy RGB", new PVector(0, 0), "BlankButtonDark", new PVector(168, 30));
-  hexButton = new Button("Copy HEX", new PVector(168, 0), "BlankButtonDark", new PVector(134, 30));
-  settingsButton = new Button("Settings", new PVector(width-30, 0), "BlankButtonDark", new PVector(30, 30));
+  rgbButton = new Button("Copy RGB", new PVector(0, 0), "BlankButton", new PVector(168, 30));
+  hexButton = new Button("Copy HEX", new PVector(168, 0), "BlankButton", new PVector(134, 30));
+  settingsButton = new Button("Settings", new PVector(width-30, 0), "SettingsButton", new PVector(30, 30));
 
   LoadSettings();
 
@@ -273,7 +273,6 @@ void LoadSettings()
   {
     settingsJSON = loadJSONObject("settings.json");
   } else {
-    println("json not found, creating");
     settingsJSON = new JSONObject();
     settingsJSON.setBoolean("darkMode", true);
     settingsJSON.setBoolean("expandOnMouse", false);
@@ -431,8 +430,4 @@ void mouseWheel(MouseEvent event) {
   if (zoom < maxZoom) {
     zoom = maxZoom;
   }
-}
-  
-void PrintFPS() {
-  println(frameRate);  
 }
