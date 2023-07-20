@@ -16,13 +16,14 @@ Point mouse;
 
 //Button variables
 Button rgbButton, hexButton, settingsButton;
-ToggleButton resizeOnHoverToggle, darkModeToggle;
+ToggleButton resizeOnHoverToggle, darkModeToggle, forceFullResToggle;
 
 Boolean captureActive, mouseSelect, panning, panningUp, panningDown, panningLeft, panningRight, surfaceChanging, surfaceExpanded, displaySettings;
 color selectedColour;
-int r, g, b;
+int r, g, b, captureSize;
 PVector centrePoint, detectionPoint, imagePos, mousePos;
-float scale, currentTime, lastTime, deltaTime;
+float maxZoom, zoom, currentTime, lastTime, deltaTime;
+float[] last10FPS = new float[] {60, 60, 60, 60, 60, 60, 60, 60, 60, 60};
 
 JSONObject settingsJSON;
 
@@ -36,6 +37,8 @@ void setup(){
   icon = loadImage("Icon.png");
   surface.setIcon(icon);
   
+  frameRate(120);
+  
   captureActive = true;
   panning = false;
   surfaceExpanded = false;
@@ -47,8 +50,11 @@ void setup(){
   panningRight = false;
   panningLeft = false;
   
-  scale = 1;
-  centrePoint = new PVector(width/2, 80);
+  maxZoom = 1;
+  zoom = maxZoom;
+  captureSize = 350;
+  
+  centrePoint = new PVector(width/2, (height/2)+15);
   detectionPoint = centrePoint;
   imagePos = centrePoint;
   lastTime = millis();
@@ -70,14 +76,16 @@ void setup(){
   LoadSettings();
 
   //Initialise toggles
-  resizeOnHoverToggle = new ToggleButton(settingsJSON.getBoolean("expandOnHover"), new PVector(width-40, 45), "Expand on hover  -  ");
+  resizeOnHoverToggle = new ToggleButton(settingsJSON.getBoolean("expandOnMouse"), new PVector(width-40, 45), "Expand on mouse mode  -  ");
   darkModeToggle = new ToggleButton(settingsJSON.getBoolean("darkMode"), new PVector(width-40, 75), "Dark mode  -  ");
+  forceFullResToggle = new ToggleButton(settingsJSON.getBoolean("forceFullRes"), new PVector(width-40, 105), "Force full res screen capture  -  ");
   
   ToggleDarkMode();
   SaveSettings();
 }
 void draw(){
   background(0);
+  
   if (captureActive) {
     captureScreenShot();
   }
@@ -91,7 +99,7 @@ void draw(){
   //Screen image
   push();
   translate(imagePos.x, imagePos.y);
-  scale(scale);
+  scale(zoom);
   imageMode(CENTER);
   image(screenshot,0, 0);
   pop();
@@ -114,15 +122,44 @@ void draw(){
   {
     RunChangeSurfaceSize();
   }
+  
+  DetectLowFPS();
 }
 
 void captureScreenShot()
 {
   mouse = MouseInfo.getPointerInfo().getLocation();
   
-  screenshotSize = new Rectangle(mouse.x-150, mouse.y-150, 300, 300);
+  screenshotSize = new Rectangle(mouse.x-(captureSize/2), mouse.y-(captureSize/2), captureSize, captureSize);
   capturedImage = robot.createScreenCapture(screenshotSize);//new Rectangle(Toolkit.getDefaultToolkit().getScreenSize()));
   screenshot = new PImage(capturedImage);
+}
+
+void DetectLowFPS()
+{
+  if (forceFullResToggle.toggledOn)
+  {return;}
+  
+  for (int i = 0; i < last10FPS.length-1; i++)
+  {
+    last10FPS[i] = last10FPS[i+1];
+  }
+  last10FPS[9] = frameRate;
+  
+  int averageFPS = 0;
+  for (int i = 0; i < last10FPS.length; i++)
+  {
+    averageFPS += last10FPS[i];
+  }
+  
+  averageFPS /= 10;
+  
+  if (averageFPS < 40)
+  {
+    captureSize = 200;
+    maxZoom = 1.5f;
+    zoom = 1.5f;
+  }
 }
 
 void GetPixelColour()
@@ -188,6 +225,7 @@ void DrawSettings()
   
   resizeOnHoverToggle.Run();
   darkModeToggle.Run();
+  forceFullResToggle.Run();
 }
 
 String formatNum(int num) 
@@ -209,9 +247,11 @@ void RunChangeSurfaceSize()
   if (mouseSelect && !surfaceExpanded)
   {
     surface.setSize(width, height + (int)(1 * deltaTime));
+    centrePoint = new PVector(width/2, (height/2)+15);
+    imagePos = centrePoint;
     if (height >= 300) {
       surfaceExpanded = true;
-      surface.setSize(width, 300);
+      surface.setSize(width, 330);
       surfaceChanging = false;
     }
   } else if (captureActive && surfaceExpanded)
@@ -221,6 +261,8 @@ void RunChangeSurfaceSize()
       surfaceExpanded = false;
       surface.setSize(width, 130);
       surfaceChanging = false;
+      centrePoint = new PVector(width/2, (height/2)+15);
+      imagePos = centrePoint;
     }
   }
 }
@@ -234,14 +276,16 @@ void LoadSettings()
     println("json not found, creating");
     settingsJSON = new JSONObject();
     settingsJSON.setBoolean("darkMode", true);
-    settingsJSON.setBoolean("expandOnHover", false);
+    settingsJSON.setBoolean("expandOnMouse", false);
+    settingsJSON.setBoolean("forceFullRes", false);
   }
 }
 
 void SaveSettings()
 {
   settingsJSON.setBoolean("darkMode", darkModeToggle.toggledOn);
-  settingsJSON.setBoolean("expandOnHover", resizeOnHoverToggle.toggledOn);
+  settingsJSON.setBoolean("expandOnMouse", resizeOnHoverToggle.toggledOn);
+  settingsJSON.setBoolean("forceFullRes", forceFullResToggle.toggledOn);
   saveJSONObject(settingsJSON, "data/settings.json");
 }
 
@@ -258,6 +302,7 @@ void ToggleDarkMode()
   
   darkModeToggle.UpdateTextColour(darkModeToggle.toggledOn);
   resizeOnHoverToggle.UpdateTextColour(darkModeToggle.toggledOn);
+  forceFullResToggle.UpdateTextColour(darkModeToggle.toggledOn);
 }
 
 void mousePressed()
@@ -277,6 +322,12 @@ void mousePressed()
       darkModeToggle.toggledOn = !darkModeToggle.toggledOn;
       SaveSettings();
       ToggleDarkMode();
+    } else if (forceFullResToggle.hover) {
+      forceFullResToggle.toggledOn = !forceFullResToggle.toggledOn;
+      captureSize = 350;
+      maxZoom = 1;
+      zoom = maxZoom;
+      SaveSettings();
     } else if (!captureActive){
       mouseSelect = !mouseSelect;
     }
@@ -306,9 +357,18 @@ void copyToClipboard(String stringToCopy){
 
 void keyPressed() {
   if (key == 'x') {
+    if (!captureActive) {
+      mouseSelect = false;
+      zoom = maxZoom; 
+    }
     captureActive = !captureActive;
-    mouseSelect = false;
-    scale = 1;
+  }
+  if (key == 'z') {
+    if (zoom == maxZoom) {
+      zoom = maxZoom*2;
+    } else {
+      zoom = maxZoom;
+    }
   }
   if (key == CODED && !captureActive)
   {
@@ -363,8 +423,12 @@ void CheckPanning() {
 
 void mouseWheel(MouseEvent event) {
   float e = event.getCount();
-  scale -= e * 0.5;
-  if (scale < 1) {
-    scale = 1;
+  zoom -= e * 0.5;
+  if (zoom < maxZoom) {
+    zoom = maxZoom;
   }
+}
+  
+void PrintFPS() {
+  println(frameRate);  
 }
