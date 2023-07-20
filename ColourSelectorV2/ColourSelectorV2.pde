@@ -98,6 +98,7 @@ void draw(){
   
   //Screen image
   push();
+  centrePoint = new PVector(width/2, (height/2)+15);
   translate(imagePos.x, imagePos.y);
   scale(zoom);
   imageMode(CENTER);
@@ -247,7 +248,6 @@ void RunChangeSurfaceSize()
   if (mouseSelect && !surfaceExpanded)
   {
     surface.setSize(width, height + (int)(1 * deltaTime));
-    centrePoint = new PVector(width/2, (height/2)+15);
     imagePos = centrePoint;
     if (height >= 300) {
       surfaceExpanded = true;
@@ -369,6 +369,10 @@ void keyPressed() {
     } else {
       zoom = maxZoom;
     }
+  }
+  if (key == 'r') {
+    zoom = maxZoom;
+    imagePos = centrePoint;
   }
   if (key == CODED && !captureActive)
   {
