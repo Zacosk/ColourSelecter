@@ -307,6 +307,8 @@ void copyToClipboard(String stringToCopy){
 void keyPressed() {
   if (key == 'x') {
     captureActive = !captureActive;
+    mouseSelect = false;
+    scale = 1;
   }
   if (key == CODED && !captureActive)
   {
