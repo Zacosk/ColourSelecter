@@ -311,7 +311,7 @@ void LoadSettings()
   } else {
     settingsJSON = new JSONObject();
     settingsJSON.setBoolean("darkMode", true);
-    settingsJSON.setBoolean("expandOnMouse", true);
+    settingsJSON.setBoolean("expandOnMouse", false);
     settingsJSON.setBoolean("forceFullRes", false);
   }
 }
