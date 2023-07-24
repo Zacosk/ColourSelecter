@@ -87,7 +87,10 @@ void mousePressed()
       maxZoom = 1;
       zoom = maxZoom;
       SaveSettings();
-    } else if (!captureActive) {mouseSelect = !mouseSelect;}
+    } else if (!captureActive) {
+      if (!mouseSelect) previousSelectedColour = selectedColour;
+      mouseSelect = !mouseSelect;
+    }
   }
   
   if (mouseButton == RIGHT)

@@ -19,9 +19,9 @@ Button rgbButton, hexButton, settingsButton;
 ToggleButton resizeOnHoverToggle, darkModeToggle, forceFullResToggle;
 
 Boolean captureActive, mouseSelect, panning, panningUp, panningDown, panningLeft, panningRight, surfaceChanging, surfaceExpanded, displaySettings, controlPressed, rgbKeyPressed, hexKeyPressed;
-color selectedColour;
+color selectedColour, previousSelectedColour;
 int r, g, b, captureSize;
-PVector centrePoint, detectionPoint, imagePos, mousePos;
+PVector centrePoint, detectionPoint, imagePos, mousePos, colourPreviewPos;
 float maxZoom, zoom, currentTime, lastTime, deltaTime;
 float[] last10FPS = new float[] {60, 60, 60, 60, 60, 60, 60, 60, 60, 60};
 
@@ -59,6 +59,7 @@ void setup(){
   captureSize = 350;
   
   centrePoint = new PVector(width/2, (height/2)+15);
+  colourPreviewPos = new PVector(width-32, height-32);
   detectionPoint = centrePoint;
   imagePos = centrePoint;
   lastTime = millis();
@@ -232,11 +233,21 @@ void DrawTopBar() {
 
 void DrawColourPreview()
 {
+  if (!captureActive)
+  {
+    colourPreviewPos = new PVector(detectionPoint.x + 12, detectionPoint.y + 12);
+  } else {
+    colourPreviewPos = new PVector(width-32, height-32);
+  }
   //Draw colour preview
   stroke(color(255-r, 255-g, 255-b));
-  strokeWeight(2);
+  strokeWeight(4);
+  rect(colourPreviewPos.x-1, colourPreviewPos.y-1, 30, 30);
+  noStroke();
   fill(selectedColour);
-  rect(width-32, height-32, 30, 30);
+  triangle(colourPreviewPos.x, colourPreviewPos.y, colourPreviewPos.x + 30, colourPreviewPos.y, colourPreviewPos.x, colourPreviewPos.y+30);
+  fill(previousSelectedColour);
+  triangle(colourPreviewPos.x, colourPreviewPos.y+30, colourPreviewPos.x+30, colourPreviewPos.y, colourPreviewPos.x + 30, colourPreviewPos.y + 30);
 }
 
 void DrawSettings()
