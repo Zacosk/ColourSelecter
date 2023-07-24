@@ -249,9 +249,6 @@ void DrawSettings()
   }
   rect(0, 30, width, height-30);
   
-  stroke(255);
-  line( 20, height/2, width-20, height/2);
-  
   resizeOnHoverToggle.Run();
   darkModeToggle.Run();
   forceFullResToggle.Run();

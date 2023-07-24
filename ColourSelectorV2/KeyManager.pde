@@ -69,12 +69,8 @@ void mousePressed()
       displaySettings = !displaySettings;
       if (displaySettings) 
       {
-        surface.setSize(width, 300);
-        surfaceExpanded = true;
         captureActive = false;
       } else {
-        surface.setSize(width, 130);
-        surfaceExpanded = false;
         captureActive = true;
       }
     }
