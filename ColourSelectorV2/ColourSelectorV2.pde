@@ -90,7 +90,7 @@ void setup(){
 void draw(){
   background(0);
   
-  if (captureActive) {
+  if (captureActive && activeWindow != null) {
     captureScreenShot();
   }
   
@@ -182,7 +182,7 @@ void DetectActiveWindow()
   activeWindow = javax.swing.FocusManager.getCurrentManager().getActiveWindow();
   if (activeWindow == null)
   {
-    captureActive = false;
+    filter(BLUR, 6);
     noStroke();
     fill(50, 150);
     rect(0, 0, width, height);
@@ -193,8 +193,6 @@ void DetectActiveWindow()
     textAlign(CENTER, CENTER);
     textSize(40);
     text("WINDOW INACTIVE", width/2, height/2);
-  } else {
-    captureActive = true;
   }
 }
 
@@ -274,34 +272,37 @@ void CalculateDeltaTime()
 
 void RunChangeSurfaceSize() 
 {
-  
-  if (mouseSelect && !surfaceExpanded)
-  {
-    /*
-    surface.setSize(width, 300);
-    surfaceExpanded = true; */
-    
-    surface.setSize(width, height + (int)(1 * deltaTime));
-    imagePos = centrePoint;
-    if (height >= 300) {
-      surfaceExpanded = true;
-      surface.setSize(width, 330);
-      surfaceChanging = false;
-    } 
-  } else if (captureActive && surfaceExpanded)
-  {
-    /*
-    surface.setSize(width, 130);
-    surfaceExpanded = false;*/
-    
-    surface.setSize(width, height - (int)(1 * deltaTime));
-    if (height <= 130) {
-      surfaceExpanded = false;
-      surface.setSize(width, 130);
-      surfaceChanging = false;
-      centrePoint = new PVector(width/2, (height/2)+15);
+  try {
+    if (mouseSelect && !surfaceExpanded)
+    {
+      /*
+      surface.setSize(width, 300);
+      surfaceExpanded = true; */
+      surface.setSize(width, height + (int)(1 * deltaTime));
       imagePos = centrePoint;
-    } 
+      if (height >= 300) {
+        surfaceExpanded = true;
+        surface.setSize(width, 330);
+        surfaceChanging = false;
+      } 
+    } else if (captureActive && surfaceExpanded)
+    {
+      /*
+      surface.setSize(width, 130);
+      surfaceExpanded = false;*/
+    
+      surface.setSize(width, height - (int)(1 * deltaTime));
+      if (height <= 130) {
+        surfaceExpanded = false;
+        surface.setSize(width, 130);
+        surfaceChanging = false;
+        centrePoint = new PVector(width/2, (height/2)+15);
+        imagePos = centrePoint;
+      }
+    }
+    } catch (Exception e) {
+      String[] export = {e.toString(), ""};
+    saveStrings("CrashLog.txt", export);
   }
 }
 
