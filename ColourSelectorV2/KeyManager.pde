@@ -3,7 +3,9 @@ void keyPressed() {
   if (key == 'x') {
     if (!captureActive) {
       mouseSelect = false;
-      zoom = maxZoom; 
+      zoom = maxZoom;
+      targetLerp = colourPreviewCornerPos;
+      colourIndicatorLerping = true;
     }
     captureActive = !captureActive;
   }
@@ -88,8 +90,12 @@ void mousePressed()
       zoom = maxZoom;
       SaveSettings();
     } else if (!captureActive) {
-      if (!mouseSelect) previousSelectedColour = selectedColour;
       mouseSelect = !mouseSelect;
+      if (mouseSelect) 
+      {
+        previousSelectedColour = selectedColour; 
+        // targetLerp = colourPreviewMousePos; colourIndicatorLerping = true;
+      }
     }
   }
   

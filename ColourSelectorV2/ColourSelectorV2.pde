@@ -18,11 +18,11 @@ Point mouse;
 Button rgbButton, hexButton, settingsButton;
 ToggleButton resizeOnHoverToggle, darkModeToggle, forceFullResToggle;
 
-Boolean captureActive, mouseSelect, panning, panningUp, panningDown, panningLeft, panningRight, surfaceChanging, surfaceExpanded, displaySettings, controlPressed, rgbKeyPressed, hexKeyPressed;
+Boolean captureActive, mouseSelect, panning, panningUp, panningDown, panningLeft, panningRight, surfaceChanging, surfaceExpanded, displaySettings, controlPressed, rgbKeyPressed, hexKeyPressed, colourIndicatorLerping;
 color selectedColour, previousSelectedColour;
 int r, g, b, captureSize;
-PVector centrePoint, detectionPoint, imagePos, mousePos, colourPreviewPos;
-float maxZoom, zoom, currentTime, lastTime, deltaTime;
+PVector centrePoint, detectionPoint, imagePos, mousePos, colourPreviewPos, colourPreviewMousePos, colourPreviewCornerPos, targetLerp;
+float maxZoom, zoom, currentTime, lastTime, deltaTime, lerpPoint;
 float[] last10FPS = new float[] {60, 60, 60, 60, 60, 60, 60, 60, 60, 60};
 
 JSONObject settingsJSON;
@@ -33,7 +33,7 @@ void setup(){
   //pixelDensity(displayDensity());
   size(330, 130);
   smooth(8);
-  surface.setTitle("Pixel Colour Selector");
+  surface.setTitle("Colour Selector");
   surface.setAlwaysOnTop(true);
   icon = loadImage("Icon.png");
   surface.setIcon(icon);
@@ -53,15 +53,20 @@ void setup(){
   controlPressed = false;
   rgbKeyPressed = false;
   hexKeyPressed = false;
+  colourIndicatorLerping = false;
   
   maxZoom = 1;
   zoom = maxZoom;
   captureSize = 350;
+  lerpPoint = 0;
+  
   
   centrePoint = new PVector(width/2, (height/2)+15);
-  colourPreviewPos = new PVector(width-32, height-32);
   detectionPoint = centrePoint;
   imagePos = centrePoint;
+  colourPreviewMousePos = new PVector(detectionPoint.x + 12, detectionPoint.y + 12);
+  colourPreviewCornerPos = new PVector(width-40, height-46);
+  colourPreviewPos = colourPreviewCornerPos;
   lastTime = millis();
   
   //New screen capture variables
@@ -132,6 +137,8 @@ void draw(){
   
   CheckCopyKeys();
   DetectActiveWindow();
+  //Lerp();
+  println(frameRate);
 }
 
 void captureScreenShot()
@@ -233,21 +240,31 @@ void DrawTopBar() {
 
 void DrawColourPreview()
 {
-  if (!captureActive)
-  {
-    colourPreviewPos = new PVector(detectionPoint.x + 12, detectionPoint.y + 12);
-  } else {
-    colourPreviewPos = new PVector(width-32, height-32);
-  }
   //Draw colour preview
   stroke(color(255-r, 255-g, 255-b));
-  strokeWeight(4);
-  rect(colourPreviewPos.x-1, colourPreviewPos.y-1, 30, 30);
-  noStroke();
   fill(selectedColour);
-  triangle(colourPreviewPos.x, colourPreviewPos.y, colourPreviewPos.x + 30, colourPreviewPos.y, colourPreviewPos.x, colourPreviewPos.y+30);
-  fill(previousSelectedColour);
-  triangle(colourPreviewPos.x, colourPreviewPos.y+30, colourPreviewPos.x+30, colourPreviewPos.y, colourPreviewPos.x + 30, colourPreviewPos.y + 30);
+  arc(colourPreviewPos.x + 25, colourPreviewPos.y + 30, 30, 30, 3.14159, 6.28319);
+  if (!captureActive) fill(previousSelectedColour);
+  arc(colourPreviewPos.x + 25, colourPreviewPos.y + 30, 30, 30, 0, 3.14159);
+}
+
+void Lerp() 
+{
+  if (colourIndicatorLerping) {
+    //Update mouse lerp pos
+    colourPreviewMousePos = new PVector(detectionPoint.x + 12, detectionPoint.y + 12);
+    
+    colourPreviewPos.lerp(targetLerp, lerpPoint);
+    
+    lerpPoint += 0.01f;
+    if (lerpPoint >= 1) {
+      colourPreviewPos.x = targetLerp.x;
+      colourPreviewPos.y = targetLerp.y;
+      colourIndicatorLerping = false;
+      println("finished lerping");
+      lerpPoint = 0;
+    }
+  }
 }
 
 void DrawSettings()
