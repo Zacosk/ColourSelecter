@@ -18,7 +18,7 @@ Point mouse;
 Button rgbButton, hexButton, settingsButton;
 ToggleButton resizeOnHoverToggle, darkModeToggle, forceFullResToggle;
 
-Boolean captureActive, mouseSelect, panning, panningUp, panningDown, panningLeft, panningRight, surfaceChanging, surfaceExpanded, displaySettings;
+Boolean captureActive, mouseSelect, panning, panningUp, panningDown, panningLeft, panningRight, surfaceChanging, surfaceExpanded, displaySettings, controlPressed, rgbKeyPressed, hexKeyPressed;
 color selectedColour;
 int r, g, b, captureSize;
 PVector centrePoint, detectionPoint, imagePos, mousePos;
@@ -26,6 +26,7 @@ float maxZoom, zoom, currentTime, lastTime, deltaTime;
 float[] last10FPS = new float[] {60, 60, 60, 60, 60, 60, 60, 60, 60, 60};
 
 JSONObject settingsJSON;
+Window activeWindow;
 
 void setup(){
   //initialise window settings
@@ -49,6 +50,9 @@ void setup(){
   panningDown = false;
   panningRight = false;
   panningLeft = false;
+  controlPressed = false;
+  rgbKeyPressed = false;
+  hexKeyPressed = false;
   
   maxZoom = 1;
   zoom = maxZoom;
@@ -105,14 +109,13 @@ void draw(){
   image(screenshot,0, 0);
   pop();
   
-  GetPixelColour();
-  
   DrawTopBar();
   DrawColourPreview();
   CalculateDeltaTime();
   CheckPanning();
   
-  DetectionMode();
+  SelectionMode();
+  GetPixelColour();
   
   if (displaySettings) 
   {
@@ -125,6 +128,9 @@ void draw(){
   }
   
   DetectLowFPS();
+  
+  CheckCopyKeys();
+  DetectActiveWindow();
 }
 
 void captureScreenShot()
@@ -171,7 +177,28 @@ void GetPixelColour()
   selectedColour = color(r, g, b);
 }
 
-void DetectionMode()
+void DetectActiveWindow()
+{
+  activeWindow = javax.swing.FocusManager.getCurrentManager().getActiveWindow();
+  if (activeWindow == null)
+  {
+    captureActive = false;
+    noStroke();
+    fill(50, 150);
+    rect(0, 0, width, height);
+    
+    fill(50);
+    rect(0, height/2-13, width, 40);
+    fill(255);
+    textAlign(CENTER, CENTER);
+    textSize(40);
+    text("WINDOW INACTIVE", width/2, height/2);
+  } else {
+    captureActive = true;
+  }
+}
+
+void SelectionMode()
 {
   if (captureActive)
   {
@@ -224,6 +251,9 @@ void DrawSettings()
   }
   rect(0, 30, width, height-30);
   
+  stroke(255);
+  line( 20, height/2, width-20, height/2);
+  
   resizeOnHoverToggle.Run();
   darkModeToggle.Run();
   forceFullResToggle.Run();
@@ -247,15 +277,23 @@ void RunChangeSurfaceSize()
   
   if (mouseSelect && !surfaceExpanded)
   {
+    /*
+    surface.setSize(width, 300);
+    surfaceExpanded = true; */
+    
     surface.setSize(width, height + (int)(1 * deltaTime));
     imagePos = centrePoint;
     if (height >= 300) {
       surfaceExpanded = true;
       surface.setSize(width, 330);
       surfaceChanging = false;
-    }
+    } 
   } else if (captureActive && surfaceExpanded)
   {
+    /*
+    surface.setSize(width, 130);
+    surfaceExpanded = false;*/
+    
     surface.setSize(width, height - (int)(1 * deltaTime));
     if (height <= 130) {
       surfaceExpanded = false;
@@ -263,7 +301,7 @@ void RunChangeSurfaceSize()
       surfaceChanging = false;
       centrePoint = new PVector(width/2, (height/2)+15);
       imagePos = centrePoint;
-    }
+    } 
   }
 }
 
@@ -304,109 +342,10 @@ void ToggleDarkMode()
   forceFullResToggle.UpdateTextColour(darkModeToggle.toggledOn);
 }
 
-void mousePressed()
-{
-  if (mouseButton == LEFT)
-  {
-    if (rgbButton.hover) {
-      copyToClipboard(r + ", " + g + ", " + b);
-    } else if (hexButton.hover) {
-      copyToClipboard("#" + hex(color(r, g, b), 6));
-    } else if (settingsButton.hover) {
-      displaySettings = !displaySettings;
-    } else if (resizeOnHoverToggle.hover) {
-      resizeOnHoverToggle.toggledOn = !resizeOnHoverToggle.toggledOn;
-      SaveSettings();
-    } else if (darkModeToggle.hover) {
-      darkModeToggle.toggledOn = !darkModeToggle.toggledOn;
-      SaveSettings();
-      ToggleDarkMode();
-    } else if (forceFullResToggle.hover) {
-      forceFullResToggle.toggledOn = !forceFullResToggle.toggledOn;
-      captureSize = 350;
-      maxZoom = 1;
-      zoom = maxZoom;
-      SaveSettings();
-    } else if (!captureActive){
-      mouseSelect = !mouseSelect;
-    }
-  }
-  if (mouseButton == RIGHT)
-  {
-    if (!panning) {
-      mousePos = new PVector(mouseX, mouseY);
-      panning = true;
-    }
-  }
-}
-
-void mouseReleased()
-{
-  if (mouseButton == RIGHT)
-  {
-    panning = false;
-  }
-}
-
 void copyToClipboard(String stringToCopy){
   StringSelection selection = new StringSelection(stringToCopy);
   Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
   clipboard.setContents(selection, selection);
-}
-
-void keyPressed() {
-  if (key == 'x') {
-    if (!captureActive) {
-      mouseSelect = false;
-      zoom = maxZoom; 
-    }
-    captureActive = !captureActive;
-  }
-  if (key == 'z') {
-    if (zoom == maxZoom) {
-      zoom = maxZoom*2;
-    } else {
-      zoom = maxZoom;
-    }
-  }
-  if (key == 'r') {
-    zoom = maxZoom;
-    imagePos = centrePoint;
-  }
-  if (key == CODED && !captureActive)
-  {
-    if (keyCode == UP) {
-      panningUp = true;
-    }
-    if (keyCode == DOWN) {
-      panningDown = true;
-    }
-    if (keyCode == RIGHT) {
-      panningRight = true;
-    }
-    if (keyCode == LEFT) {
-      panningLeft = true;
-    }
-  }
-}
-
-void keyReleased()
-{
-  if (key == CODED && !captureActive)
-  {
-    if (keyCode == UP) {
-      panningUp = false;
-    }
-    if (keyCode == DOWN) {
-      panningDown = false;
-    }
-    if (keyCode == RIGHT) {
-      panningRight = false;
-    }
-    if (keyCode == LEFT) {
-      panningLeft = false;
-    }
-  }
 }
 
 void CheckPanning() {
@@ -421,13 +360,5 @@ void CheckPanning() {
   }
   if (panningRight) {
     imagePos.x -= 0.5f * deltaTime;
-  }
-}
-
-void mouseWheel(MouseEvent event) {
-  float e = event.getCount();
-  zoom -= e * 0.5;
-  if (zoom < maxZoom) {
-    zoom = maxZoom;
   }
 }
