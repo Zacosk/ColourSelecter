@@ -20,7 +20,7 @@ ToggleButton resizeOnHoverToggle, darkModeToggle, forceFullResToggle;
 
 Boolean captureActive, mouseSelect, panning, panningUp, panningDown, panningLeft, panningRight, surfaceChanging, surfaceExpanded, displaySettings, controlPressed, rgbKeyPressed, hexKeyPressed, colourIndicatorLerping;
 color selectedColour, previousSelectedColour;
-int r, g, b, captureSize;
+int r, g, b, captureWidth, captureHeight;
 PVector centrePoint, detectionPoint, imagePos, mousePos, colourPreviewPos, colourPreviewMousePos, colourPreviewCornerPos, targetLerp;
 float maxZoom, zoom, currentTime, lastTime, deltaTime, lerpPoint;
 float[] last10FPS = new float[] {60, 60, 60, 60, 60, 60, 60, 60, 60, 60};
@@ -57,7 +57,8 @@ void setup(){
   
   maxZoom = 1;
   zoom = maxZoom;
-  captureSize = 350;
+  captureWidth = 330;
+  captureHeight = 100;
   lerpPoint = 0;
   
   
@@ -139,13 +140,15 @@ void draw(){
   DetectActiveWindow();
   //Lerp();
   println(frameRate);
+  println("capture height: " + captureHeight);
 }
 
 void captureScreenShot()
 {
   mouse = MouseInfo.getPointerInfo().getLocation();
   
-  screenshotSize = new Rectangle(mouse.x-(captureSize/2), mouse.y-(captureSize/2), captureSize, captureSize);
+  screenshotSize = new Rectangle(mouse.x-(captureWidth/2), mouse.y-(captureHeight/2), captureWidth, captureHeight);
+  
   capturedImage = robot.createScreenCapture(screenshotSize);//new Rectangle(Toolkit.getDefaultToolkit().getScreenSize()));
   screenshot = new PImage(capturedImage);
 }
@@ -171,7 +174,8 @@ void DetectLowFPS()
   
   if (averageFPS < 40)
   {
-    captureSize = 200;
+    captureWidth = 200;
+    captureHeight = 60;
     maxZoom = 1.5f;
     zoom = 1.5f;
   }

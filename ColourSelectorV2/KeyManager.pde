@@ -6,6 +6,10 @@ void keyPressed() {
       zoom = maxZoom;
       targetLerp = colourPreviewCornerPos;
       colourIndicatorLerping = true;
+      captureHeight = 100;
+    } else {
+      captureHeight = 330;
+      captureScreenShot();
     }
     captureActive = !captureActive;
   }
@@ -85,7 +89,8 @@ void mousePressed()
       ToggleDarkMode();
     } else if (forceFullResToggle.hover) {
       forceFullResToggle.toggledOn = !forceFullResToggle.toggledOn;
-      captureSize = 350;
+      captureWidth = 330;
+      captureHeight = 100;
       maxZoom = 1;
       zoom = maxZoom;
       SaveSettings();
