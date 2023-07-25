@@ -139,8 +139,6 @@ void draw(){
   CheckCopyKeys();
   DetectActiveWindow();
   //Lerp();
-  println(frameRate);
-  println("capture height: " + captureHeight);
 }
 
 void captureScreenShot()
@@ -247,9 +245,13 @@ void DrawColourPreview()
   //Draw colour preview
   stroke(color(255-r, 255-g, 255-b));
   fill(selectedColour);
-  arc(colourPreviewPos.x + 25, colourPreviewPos.y + 30, 30, 30, 3.14159, 6.28319);
+  push();
+  translate(colourPreviewPos.x + 25, colourPreviewPos.y + 30);
+  arc(0, 0, 30, 30, 3.14159, 6.28319);
   if (!captureActive) fill(previousSelectedColour);
-  arc(colourPreviewPos.x + 25, colourPreviewPos.y + 30, 30, 30, 0, 3.14159);
+  rotate(radians(180));
+  arc(0, 0, 30, 30, 3.14159, 6.28319);
+  pop();
 }
 
 void Lerp() 
