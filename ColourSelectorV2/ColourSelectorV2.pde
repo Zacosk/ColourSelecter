@@ -20,24 +20,28 @@ ToggleButton resizeOnHoverToggle, darkModeToggle, forceFullResToggle;
 
 Boolean captureActive, mouseSelect, panning, panningUp, panningDown, panningLeft, panningRight, surfaceChanging, surfaceExpanded, displaySettings, controlPressed, rgbKeyPressed, hexKeyPressed, colourIndicatorLerping;
 color selectedColour, previousSelectedColour;
-int r, g, b, captureWidth, captureHeight;
-PVector centrePoint, detectionPoint, imagePos, mousePos, colourPreviewPos, colourPreviewMousePos, colourPreviewCornerPos, targetLerp;
+int red, green, blue, captureWidth, captureHeight;
+PVector centrePoint, detectionPoint, imagePos, mousePos, crossHairPos, colourPreviewPos, colourPreviewMousePos, colourPreviewCornerPos, targetLerp;
 float maxZoom, zoom, currentTime, lastTime, deltaTime, lerpPoint;
 float[] last10FPS = new float[] {60, 60, 60, 60, 60, 60, 60, 60, 60, 60};
 
 JSONObject settingsJSON;
-Window activeWindow;
+
+void settings()
+{ 
+  size(330, 130, P2D);
+  pixelDensity(displayDensity());
+  //initialise window settings
+  //smooth(8);
+  PJOGL.setIcon("Icon.png");
+}
 
 void setup(){
-  //initialise window settings
-  //pixelDensity(displayDensity());
-  size(330, 130);
-  smooth(8);
+  ((PGraphicsOpenGL)g).textureSampling(2);
+  
   surface.setTitle("Colour Selector");
   surface.setAlwaysOnTop(true);
-  icon = loadImage("Icon.png");
   surface.setIcon(icon);
-  
   frameRate(120);
   
   captureActive = true;
@@ -63,9 +67,10 @@ void setup(){
   
   
   centrePoint = new PVector(width/2, (height/2)+15);
-  detectionPoint = centrePoint;
+  detectionPoint = new PVector(centrePoint.x * displayDensity(), centrePoint.y * displayDensity());
+  crossHairPos = centrePoint;
   imagePos = centrePoint;
-  colourPreviewMousePos = new PVector(detectionPoint.x + 12, detectionPoint.y + 12);
+  colourPreviewMousePos = new PVector(centrePoint.x + 12, centrePoint.y + 12);
   colourPreviewCornerPos = new PVector(width-40, height-46);
   colourPreviewPos = colourPreviewCornerPos;
   lastTime = millis();
@@ -97,7 +102,7 @@ void setup(){
 void draw(){
   background(0);
   
-  if (captureActive && activeWindow != null) {
+  if (captureActive && focused) {
     captureScreenShot();
   }
   
@@ -109,6 +114,7 @@ void draw(){
   
   //Screen image
   push();
+  
   centrePoint = new PVector(width/2, (height/2)+15);
   translate(imagePos.x, imagePos.y);
   scale(zoom);
@@ -137,8 +143,12 @@ void draw(){
   DetectLowFPS();
   
   CheckCopyKeys();
-  DetectActiveWindow();
+  
+  if (!focused) {
+    DrawInactive();
+  }
   //Lerp();
+  //println(frameRate);
 }
 
 void captureScreenShot()
@@ -172,54 +182,52 @@ void DetectLowFPS()
   
   if (averageFPS < 40)
   {
-    captureWidth = 200;
+    captureWidth = 198;
     captureHeight = 60;
-    maxZoom = 1.5f;
-    zoom = 1.5f;
+    maxZoom = 1.7f;
+    zoom = 1.7f;
   }
 }
 
 void GetPixelColour()
 {
-  r = int(red(get((int)detectionPoint.x, (int)detectionPoint.y)));
-  g = int(green(get((int)detectionPoint.x, (int)detectionPoint.y)));
-  b = int(blue(get((int)detectionPoint.x, (int)detectionPoint.y)));
-  selectedColour = color(r, g, b);
+  red = int(red(get((int)detectionPoint.x, (int)detectionPoint.y)));
+  green = int(green(get((int)detectionPoint.x, (int)detectionPoint.y)));
+  blue = int(blue(get((int)detectionPoint.x, (int)detectionPoint.y)));
+  selectedColour = color(red, green, blue);
 }
 
-void DetectActiveWindow()
+void DrawInactive()
 {
-  activeWindow = javax.swing.FocusManager.getCurrentManager().getActiveWindow();
-  if (activeWindow == null)
-  {
-    filter(BLUR, 6);
-    noStroke();
-    fill(50, 150);
-    rect(0, 0, width, height);
+  filter(BLUR, 6);
+  noStroke();
+  fill(50, 150);
+  rect(0, 0, width * displayDensity(), height * displayDensity());
     
-    fill(50);
-    rect(0, height/2-13, width, 40);
-    fill(255);
-    textAlign(CENTER, CENTER);
-    textSize(40);
-    text("WINDOW INACTIVE", width/2, height/2);
-  }
+  fill(50);
+  rect(0, height/2-13, width, 40);
+  fill(255);
+  textAlign(CENTER, CENTER);
+  textSize(40);
+  text("WINDOW INACTIVE", width/2, height/2);
 }
 
 void SelectionMode()
 {
   if (captureActive)
   {
-    detectionPoint = centrePoint;
+    detectionPoint = new PVector(centrePoint.x * displayDensity(), centrePoint.y * displayDensity());
     imagePos = centrePoint;
+    crossHairPos = centrePoint;
   } else if (mouseSelect){
-    detectionPoint = new PVector(mouseX, mouseY);
-  }
+    detectionPoint = new PVector(mouseX * displayDensity(), mouseY * displayDensity());
+    crossHairPos = new PVector(mouseX, mouseY);  
+}
   //Crosshair
   noFill();
-  stroke(color(255-r, 255-g, 255-b));
+  stroke(color(255-red, 255-green, 255-blue));
   strokeWeight(3);
-  circle(detectionPoint.x, detectionPoint.y, 10);
+  circle(crossHairPos.x, crossHairPos.y, 10);
 }
 
 void DrawTopBar() {
@@ -236,14 +244,14 @@ void DrawTopBar() {
   }
   textSize(20);
   textAlign(LEFT);
-  text("RGB: " + formatNum(r) + ", " + formatNum(g) + ", " + formatNum(b), 8, 22);
+  text("RGB: " + formatNum(red) + ", " + formatNum(green) + ", " + formatNum(blue), 8, 22);
   text("HEX: #" + hex(selectedColour, 6), 176, 22);
 }
 
 void DrawColourPreview()
 {
   //Draw colour preview
-  stroke(color(255-r, 255-g, 255-b));
+  stroke(color(255-red, 255-green, 255-blue));
   fill(selectedColour);
   push();
   translate(colourPreviewPos.x + 25, colourPreviewPos.y + 30);
@@ -316,6 +324,7 @@ void RunChangeSurfaceSize()
         surface.setSize(width, 330);
         surfaceChanging = false;
       } 
+      colourPreviewPos = new PVector(width-40, height-46);
     } else if (captureActive && surfaceExpanded)
     {
       /*
@@ -330,6 +339,7 @@ void RunChangeSurfaceSize()
         centrePoint = new PVector(width/2, (height/2)+15);
         imagePos = centrePoint;
       }
+      colourPreviewPos = new PVector(width-40, height-46);
     }
     } catch (Exception e) {
       String[] export = {e.toString(), ""};

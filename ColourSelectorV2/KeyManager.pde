@@ -69,8 +69,8 @@ void mousePressed()
 {
   if (mouseButton == LEFT)
   {
-    if (rgbButton.hover) copyToClipboard(r + ", " + g + ", " + b);
-    else if (hexButton.hover) copyToClipboard("#" + hex(color(r, g, b), 6));
+    if (rgbButton.hover) copyToClipboard(red + ", " + green + ", " + blue);
+    else if (hexButton.hover) copyToClipboard("#" + hex(color(red, green, blue), 6));
     else if (settingsButton.hover) {
       displaySettings = !displaySettings;
       if (displaySettings) 
@@ -129,9 +129,9 @@ void mouseWheel(MouseEvent event) {
 void CheckCopyKeys() {
   if (controlPressed) {
     if (hexKeyPressed) {
-      copyToClipboard("#" + hex(color(r, g, b), 6));
+      copyToClipboard("#" + hex(color(red, green, blue), 6));
     } else if (rgbKeyPressed) {
-      copyToClipboard(r + ", " + g + ", " + b);
+      copyToClipboard(red + ", " + green + ", " + blue);
     }
   }
 }
