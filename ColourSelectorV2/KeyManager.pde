@@ -69,17 +69,30 @@ void mousePressed()
 {
   if (mouseButton == LEFT)
   {
+    //Buttons
     if (rgbButton.hover) copyToClipboard(red + ", " + green + ", " + blue);
-    else if (hexButton.hover) copyToClipboard("#" + hex(color(red, green, blue), 6));
+    else if (hexButton.hover) 
+    {
+      String hash = "#";
+      if (!hexCopyHashToggle.toggledOn) {
+        hash = "";
+      }
+      copyToClipboard(hash + hex(color(red, green, blue), 6));
+    }
     else if (settingsButton.hover) {
       displaySettings = !displaySettings;
       if (displaySettings) 
       {
         captureActive = false;
+        DrawSettings(); 
       } else {
-        captureActive = true;
+        if (!mouseSelect) {
+          captureActive = true;
+        }
       }
     }
+    
+    //Toggles
     else if (resizeOnHoverToggle.hover) {
       resizeOnHoverToggle.toggledOn = !resizeOnHoverToggle.toggledOn;
       SaveSettings();
@@ -94,7 +107,12 @@ void mousePressed()
       maxZoom = 1;
       zoom = maxZoom;
       SaveSettings();
-    } else if (!captureActive) {
+    } else if (hexCopyHashToggle.hover) {
+      hexCopyHashToggle.toggledOn = !hexCopyHashToggle.toggledOn;
+      SaveSettings();
+      
+      //Else
+    } else if (!captureActive && !displaySettings) {
       mouseSelect = !mouseSelect;
       if (mouseSelect) 
       {
@@ -129,7 +147,11 @@ void mouseWheel(MouseEvent event) {
 void CheckCopyKeys() {
   if (controlPressed) {
     if (hexKeyPressed) {
-      copyToClipboard("#" + hex(color(red, green, blue), 6));
+      String hash = "#";
+      if (!hexCopyHashToggle.toggledOn) {
+        hash = "";
+      }
+      copyToClipboard(hash + hex(color(red, green, blue), 6));
     } else if (rgbKeyPressed) {
       copyToClipboard(red + ", " + green + ", " + blue);
     }

@@ -22,7 +22,7 @@ public class ToggleButton
   {
     fill(textColour);
     textSize(20);
-    textAlign(RIGHT);
+    textAlign(LEFT);
     text(description, position.x-6, position.y + 10);
     
     int togglePos = 0;
@@ -33,16 +33,16 @@ public class ToggleButton
       togglePos = 30;
     }
     
-    rect(position.x, position.y, 30, 8, 5);
-    circle(position.x + togglePos, position.y+4, 15);
+    rect(position.x-50, position.y, 30, 8, 5);
+    circle(position.x-50 + togglePos, position.y+4, 15);
   }
   
   void CheckHover()
   {
     hover = false;
-    if (mouseX >= position.x - 15 && mouseX <= position.x + 15)
+    if (mouseX >= position.x - 60 && mouseX <= position.x - 10)
     {
-      if (mouseY >= position.y - 15 && mouseY <= position.y + 15)
+      if (mouseY >= position.y - 5 && mouseY <= position.y + 10)
       {
         hover = true;
       }

@@ -16,7 +16,7 @@ Point mouse;
 
 //Button variables
 Button rgbButton, hexButton, settingsButton;
-ToggleButton resizeOnHoverToggle, darkModeToggle, forceFullResToggle;
+ToggleButton resizeOnHoverToggle, darkModeToggle, forceFullResToggle, hexCopyHashToggle;
 
 Boolean captureActive, mouseSelect, panning, panningUp, panningDown, panningLeft, panningRight, surfaceChanging, surfaceExpanded, displaySettings, controlPressed, rgbKeyPressed, hexKeyPressed, colourIndicatorLerping;
 color selectedColour, previousSelectedColour;
@@ -85,16 +85,17 @@ void setup(){
   }
 
   //Initialise buttons
-  rgbButton = new Button("Copy RGB", new PVector(0, 0), "BlankButton", new PVector(168, 30));
-  hexButton = new Button("Copy HEX", new PVector(168, 0), "BlankButton", new PVector(134, 30));
-  settingsButton = new Button("Settings", new PVector(width-30, 0), "SettingsButton", new PVector(30, 30));
+  rgbButton = new Button("Copy RGB", new PVector(0, 0), "BlankButton", new PVector(0.334, 0.3), new PVector(168, 30));
+  hexButton = new Button("Copy HEX", new PVector(167, 0), "BlankButton", new PVector(0.266, 0.3), new PVector(132, 30));
+  settingsButton = new Button("Settings", new PVector(width-30, 0), "SettingsButton", new PVector(0.06, 0.06), new PVector(30, 30));
 
   LoadSettings();
 
   //Initialise toggles
-  resizeOnHoverToggle = new ToggleButton(settingsJSON.getBoolean("expandOnMouse"), new PVector(width-40, 45), "Expand on mouse mode  -  ");
-  darkModeToggle = new ToggleButton(settingsJSON.getBoolean("darkMode"), new PVector(width-40, 75), "Dark mode  -  ");
-  forceFullResToggle = new ToggleButton(settingsJSON.getBoolean("forceFullRes"), new PVector(width-40, 105), "Force full res screen capture  -  ");
+  resizeOnHoverToggle = new ToggleButton(settingsJSON.getBoolean("expandOnMouse"), new PVector(65, 15), "- Expand on mouse mode");
+  darkModeToggle = new ToggleButton(settingsJSON.getBoolean("darkMode"), new PVector(65, 75), "- Dark mode");
+  forceFullResToggle = new ToggleButton(settingsJSON.getBoolean("forceFullRes"), new PVector(65, 105), "- Force full res screen capture");
+  hexCopyHashToggle = new ToggleButton(settingsJSON.getBoolean("hexCopyHash"), new PVector(65, 45), "- Hex copy with '#'");
   
   ToggleDarkMode();
   SaveSettings();
@@ -114,7 +115,6 @@ void draw(){
   
   //Screen image
   push();
-  
   centrePoint = new PVector(width/2, (height/2)+15);
   translate(imagePos.x, imagePos.y);
   scale(zoom);
@@ -130,11 +130,6 @@ void draw(){
   SelectionMode();
   GetPixelColour();
   
-  if (displaySettings) 
-  {
-    DrawSettings(); 
-  }
-  
   if (resizeOnHoverToggle.toggledOn)
   {
     RunChangeSurfaceSize();
@@ -144,6 +139,10 @@ void draw(){
   
   CheckCopyKeys();
   
+  if (!captureActive && displaySettings) {
+    DrawSettings();
+  }
+  
   if (!focused) {
     DrawInactive();
   }
@@ -152,7 +151,7 @@ void draw(){
 }
 
 void captureScreenShot()
-{
+{   
   mouse = MouseInfo.getPointerInfo().getLocation();
   
   screenshotSize = new Rectangle(mouse.x-(captureWidth/2), mouse.y-(captureHeight/2), captureWidth, captureHeight);
@@ -232,20 +231,23 @@ void SelectionMode()
 
 void DrawTopBar() {
   //Draw buttons
-  rgbButton.Run();
-  hexButton.Run();
+  if (!displaySettings)
+  {
+    rgbButton.Run();
+    hexButton.Run();
+  }
   settingsButton.Run();
   
   //Draw text
-  fill(0);
+  fill(102);
   if (darkModeToggle.toggledOn)
   {
     fill(255);
   }
   textSize(20);
   textAlign(LEFT);
-  text("RGB: " + formatNum(red) + ", " + formatNum(green) + ", " + formatNum(blue), 8, 22);
-  text("HEX: #" + hex(selectedColour, 6), 176, 22);
+  text("RGB: " + formatNum(red) + ", " + formatNum(green) + ", " + formatNum(blue), 4, 22);
+  text("HEX: #" + hex(selectedColour, 6), 170, 22);
 }
 
 void DrawColourPreview()
@@ -290,10 +292,12 @@ void DrawSettings()
     fill(56);
   }
   rect(0, 30, width, height-30);
+  rect(0, 0, width-30, 31);
   
   resizeOnHoverToggle.Run();
   darkModeToggle.Run();
   forceFullResToggle.Run();
+  hexCopyHashToggle.Run();
 }
 
 String formatNum(int num) 
@@ -312,34 +316,39 @@ void CalculateDeltaTime()
 void RunChangeSurfaceSize() 
 {
   try {
-    if (mouseSelect && !surfaceExpanded)
+    if (mouseSelect && !surfaceExpanded && !displaySettings)
     {
+      surface.setSize(width, 280);
+      surfaceExpanded = true;
       /*
-      surface.setSize(width, 300);
-      surfaceExpanded = true; */
       surface.setSize(width, height + (int)(1 * deltaTime));
       imagePos = centrePoint;
+      surfaceChanging = true;
       if (height >= 300) {
         surfaceExpanded = true;
         surface.setSize(width, 330);
         surfaceChanging = false;
-      } 
+      }  */
       colourPreviewPos = new PVector(width-40, height-46);
+      imagePos.y = (height-30)/2;
+      //println("expanding");
     } else if (captureActive && surfaceExpanded)
-    {
+    {   
       /*
-      surface.setSize(width, 130);
-      surfaceExpanded = false;*/
-    
       surface.setSize(width, height - (int)(1 * deltaTime));
+      surfaceChanging = true;
       if (height <= 130) {
         surfaceExpanded = false;
         surface.setSize(width, 130);
         surfaceChanging = false;
         centrePoint = new PVector(width/2, (height/2)+15);
         imagePos = centrePoint;
-      }
+      } */
+      surface.setSize(width, 130);
+      surfaceExpanded = false;
       colourPreviewPos = new PVector(width-40, height-46);
+      imagePos.y = (height-30)/2;
+      //println("shrinking");
     }
     } catch (Exception e) {
       String[] export = {e.toString(), ""};
@@ -357,6 +366,7 @@ void LoadSettings()
     settingsJSON.setBoolean("darkMode", true);
     settingsJSON.setBoolean("expandOnMouse", false);
     settingsJSON.setBoolean("forceFullRes", false);
+    settingsJSON.setBoolean("hexCopyHash", true);
   }
 }
 
@@ -365,6 +375,7 @@ void SaveSettings()
   settingsJSON.setBoolean("darkMode", darkModeToggle.toggledOn);
   settingsJSON.setBoolean("expandOnMouse", resizeOnHoverToggle.toggledOn);
   settingsJSON.setBoolean("forceFullRes", forceFullResToggle.toggledOn);
+  settingsJSON.setBoolean("hexCopyHash", hexCopyHashToggle.toggledOn);
   saveJSONObject(settingsJSON, "data/settings.json");
 }
 
@@ -382,6 +393,7 @@ void ToggleDarkMode()
   darkModeToggle.UpdateTextColour(darkModeToggle.toggledOn);
   resizeOnHoverToggle.UpdateTextColour(darkModeToggle.toggledOn);
   forceFullResToggle.UpdateTextColour(darkModeToggle.toggledOn);
+  hexCopyHashToggle.UpdateTextColour(darkModeToggle.toggledOn);
 }
 
 void copyToClipboard(String stringToCopy){

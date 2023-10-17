@@ -1,18 +1,23 @@
 public class Button
 {
   String imageName;
-  PImage image;
-  PVector position, size;
+  PShape icon;
+  PVector position, size, scale;
+  color darkCol, lightCol;
   public boolean hover;
   float timer;
   
-  public Button(String text, PVector position, String imageName, PVector size)
+  public Button(String text, PVector position, String imageName, PVector scale, PVector size)
   {
     this.position = position;
     this.imageName = imageName;
     
-    this.image = loadImage(imageName + "Dark.png");
-    this.image.resize((int)size.x, (int)size.y);
+    this.darkCol = color(102);
+    this.lightCol = color(255);
+    
+    this.icon = loadShape(imageName + ".svg");
+    this.icon.scale(scale.x, scale.y);
+    this.scale = scale;
     this.size = size;
   }
   
@@ -26,12 +31,13 @@ public class Button
   {
     push();
     translate(position.x, position.y);
-    //imageMode(CENTER);
+    icon.setFill((darkModeToggle.toggledOn == false) ? lightCol : darkCol);
+    //if (darkMode == true) ? icon.setFill(darkCol); : icon.setFill(lightCol);
     if (hover)
     {
-      tint(180);
+      icon.setFill((darkModeToggle.toggledOn == false) ? lightCol + color(205) : darkCol + color(35));
     }
-    image(image, 0, 0);
+    shape(icon, 0, 0);
     pop();
   }
   
@@ -67,9 +73,9 @@ public class Button
   public void CheckHover()
   {
     hover = false;
-    if (mouseX <= (position.x) + (image.width) && mouseX >= (position.x))
+    if (mouseX <= (position.x-1) + (size.x) && mouseX >= (position.x+1))
     {
-      if (mouseY <= (position.y) + (image.height) && mouseY >= (position.y))
+      if (mouseY <= (position.y-1) + (size.y) && mouseY >= (position.y+1))
       {
         hover = true;
       }
@@ -80,10 +86,11 @@ public class Button
   {
     if (darkMode)
     {
-      image = loadImage(imageName + "Dark.png");
+      icon.setFill(darkCol);
+      icon.setStroke(lightCol);
     } else {
-      image = loadImage(imageName + "Light.png");
+      icon.setFill(lightCol);
+      icon.setStroke(darkCol);
     }
-    image.resize((int)size.x, (int)size.y);
-  }
+  } 
 }
